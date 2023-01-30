@@ -25,4 +25,8 @@ urlpatterns = [
     path('api/ticket/<int:ticket_id>', views.updateTicket, name="updateTicket"),
     path('api/ticket/<int:ticket_id>', views.deleteTicket, name="deleteTicket"),
     path('getTicketDatas/<str:artist>', views.getTicketData, name="getTicketData"),
+    path('api/artists', views.getArtists, name="getArtists"),
+    path('api/artist', views.createArtist, name="createArtist"),
+    path('api/artist/<int:ticket_id>', views.getArtistById, name="getArtistById"),
+    path('api/artist/<int:ticket_id>', views.deleteArtist, name="deleteArtist"),
 ]

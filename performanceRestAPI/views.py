@@ -3,14 +3,15 @@ from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from .serializer import TicketSerializer
+from .serializer import ArtistSerilalizer
 from .models import Ticket
+from .models import Artist
 from .scrapping import getDatas
 
 # Create your views here.
 @api_view(['GET'])
 def getTicketData(request, artist):
     information = getDatas(artist)
-    print(information)
 
     tikets = Ticket.objects.all()
     serializer = TicketSerializer(tikets, many = True)
@@ -69,6 +70,34 @@ def updateTicket(request, ticket_id):
 def deleteTicket(request, ticket_id):
     ticket = Ticket.objects.get(pk=ticket_id)
     ticket.delete()
+    return Response({'message':'success', 'code': 200})
+
+@api_view(['GET'])
+def getArtists(request):
+    artists = Artist.objects.all()
+    serializer = ArtistSerilalizer(artists, many = True)
+    return Response(serializer.data)
+
+@api_view(['POST'])
+def createArtist(request):
+    serializer = ArtistSerilalizer(data=request.data)
+    # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # 유효하지 않은 데이터면, 400 Error 변환
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(['GET'])
+def getArtistById(request, artist_id):
+    artist = Artist.objects.get(pk=artist_id)
+    serializer = ArtistSerilalizer(artist)
+    return Response(serializer.data)
+
+@api_view(['DELETE'])
+def deleteArtist(request, artist_id):
+    artist = Artist.objects.get(pk=artist_id)
+    artist.delete()
     return Response({'message':'success', 'code': 200})
 
 
