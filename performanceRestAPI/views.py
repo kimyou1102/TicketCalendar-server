@@ -12,6 +12,10 @@ from .scrapping import getDatas
 @api_view(['GET'])
 def getTicketData(request, artist):
     information = getDatas(artist)
+    mached_artist = Artist.objects.filter(name = artist).values()[0]
+    
+    for info in information:
+        info['artist_id'] = mached_artist['id']
 
     tikets = Ticket.objects.all()
     serializer = TicketSerializer(tikets, many = True)
@@ -23,6 +27,15 @@ def getTicketData(request, artist):
     serializer = TicketSerializer(tikets, many = True)
     return Response(serializer.data)
 
+def addTicket(scrappingData):
+    serializer = TicketSerializer(data=scrappingData)
+    # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
+    if serializer.is_valid():
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    # 유효하지 않은 데이터면, 400 Error 변환
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 @api_view(['GET'])
 def getTickets(request):
     tikets = Ticket.objects.all()
@@ -32,15 +45,6 @@ def getTickets(request):
 @api_view(['POST'])
 def createTicket(request):
     serializer = TicketSerializer(data=request.data)
-    # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
-    if serializer.is_valid():
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    # 유효하지 않은 데이터면, 400 Error 변환
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-def addTicket(scrappingData):
-    serializer = TicketSerializer(data=scrappingData)
     # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
     if serializer.is_valid():
         serializer.save()
