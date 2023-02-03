@@ -9,22 +9,23 @@ from .models import Artist
 from .scrapping import getDatas
 
 # Create your views here.
-@api_view(['GET'])
-def getTicketData(request, artist):
+def TicketDataCollect(artist):
     information = getDatas(artist)
     mached_artist = Artist.objects.filter(name = artist).values()[0]
-    
+
     for info in information:
         info['artist_id'] = mached_artist['id']
-
-    tikets = Ticket.objects.all()
-    serializer = TicketSerializer(tikets, many = True)
 
     for data in information:
         addTicket(data)
 
+
+@api_view(['GET'])
+def getTicketData(request, artist):
+    TicketDataCollect(artist)
     tikets = Ticket.objects.all()
     serializer = TicketSerializer(tikets, many = True)
+
     return Response(serializer.data)
 
 def addTicket(scrappingData):
@@ -103,6 +104,16 @@ def deleteArtist(request, artist_id):
     artist = Artist.objects.get(pk=artist_id)
     artist.delete()
     return Response({'message':'success', 'code': 200})
+
+def getTicketDatas():
+    artists = Artist.objects.all().values()
+    aritsts_list = []
+
+    for artist in artists:
+        aritsts_list.append(artist['name'])
+
+    for artist in aritsts_list:
+        TicketDataCollect(artist)
 
 
 

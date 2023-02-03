@@ -41,7 +41,12 @@ INSTALLED_APPS = [
     'performanceRestAPI',
     'rest_framework',
     'corsheaders',
+    'django_apscheduler',
 ]
+
+APSCHEDULER_DATETIME_FORMAT = "N j, Y, f:s a"  # Default
+
+SCHEDULER_DEFAULT = True
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
