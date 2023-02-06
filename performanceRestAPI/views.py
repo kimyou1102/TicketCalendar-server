@@ -53,29 +53,27 @@ def createTicket(request):
     # 유효하지 않은 데이터면, 400 Error 변환
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def getTicketById(request, ticket_id):
-    ticket = Ticket.objects.get(pk=ticket_id)
-    serializer = TicketSerializer(ticket)
-    return Response(serializer.data)
+@api_view(['GET', 'PATCH', 'DELETE'])
+def ticketOption(request, ticket_id):
+    if request.method == 'GET':
+        ticket = Ticket.objects.get(pk=ticket_id)
+        serializer = TicketSerializer(ticket)
+        return Response(serializer.data)
+    elif request.method == 'PATCH':
+        ticket = Ticket.objects.get(pk=ticket_id)
+        serializer = TicketSerializer(ticket, data=request.data, partial = True)
 
-@api_view(['PATCH'])
-def updateTicket(request, ticket_id):
-    ticket = Ticket.objects.get(pk=ticket_id)
-    serializer = TicketSerializer(ticket, data=request.data, partial = True)
+        # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
+        if serializer.is_valid():
+            serializer.save() # update
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # 유효하지 않은 데이터면, 400 Error 변환
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'DELETE':
+        ticket = Ticket.objects.get(pk=ticket_id)
+        ticket.delete()
+        return Response({'message':'success', 'code': 200})
 
-    # 클라이언트가 입력한 데이터가 유효하면, 게시글 생성
-    if serializer.is_valid():
-        serializer.save() # update
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-    # 유효하지 않은 데이터면, 400 Error 변환
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-@api_view(['DELETE'])
-def deleteTicket(request, ticket_id):
-    ticket = Ticket.objects.get(pk=ticket_id)
-    ticket.delete()
-    return Response({'message':'success', 'code': 200})
 
 @api_view(['GET'])
 def getArtists(request):
@@ -93,17 +91,15 @@ def createArtist(request):
     # 유효하지 않은 데이터면, 400 Error 변환
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-@api_view(['GET'])
-def getArtistById(request, artist_id):
+@api_view(['GET', 'DELETE'])
+def getOrDeleteArtist(request, artist_id):
     artist = Artist.objects.get(pk=artist_id)
-    serializer = ArtistSerilalizer(artist)
-    return Response(serializer.data)
-
-@api_view(['DELETE'])
-def deleteArtist(request, artist_id):
-    artist = Artist.objects.get(pk=artist_id)
-    artist.delete()
-    return Response({'message':'success', 'code': 200})
+    if request.method == 'GET':
+        serializer = ArtistSerilalizer(artist)
+        return Response(serializer.data)
+    elif request.method == 'DELETE':
+        artist.delete()
+        return Response({'message':'success', 'code': 200})
 
 def getTicketDatas():
     artists = Artist.objects.all().values()
