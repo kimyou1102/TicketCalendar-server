@@ -3,6 +3,7 @@ from django.db import models
 
 class Artist(models.Model):
     name = models.CharField(max_length=200, unique=True)
+    color = models.CharField(max_length=100, null=True)
 
 class Ticket(models.Model):
     artist_id = models.ForeignKey(Artist, related_name="artist", on_delete=models.CASCADE, db_column="artist_id", null=True)

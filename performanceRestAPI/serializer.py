@@ -12,4 +12,4 @@ class ArtistSerilalizer(serializers.ModelSerializer):
 
     class Meta:
         model = Artist
-        fields = ('id', 'name', 'artist')
+        fields = ('id', 'name', 'artist', 'color')
