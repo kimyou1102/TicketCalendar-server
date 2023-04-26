@@ -2,6 +2,7 @@ from django.db import models
 # Create your models here.
 
 class Artist(models.Model):
+    user_id = models.ForeignKey('account.User', related_name="user", on_delete=models.CASCADE, db_column="user_id", null=True)
     name = models.CharField(max_length=200, unique=True)
     color = models.CharField(max_length=100, null=True)
 
