@@ -63,3 +63,15 @@ def login(user_obj, user):
     res.set_cookie("access", access_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5)) 
     res.set_cookie("refresh", refresh_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5))
     return res
+
+@api_view(['GET'])
+def logout(request):
+    try:
+        res = response.Response()
+        res.delete_cookie("access")
+        res.delete_cookie("refresh")
+        return res
+    except:
+        return Response(
+            {"message": "로그아웃에 실패하였습니다."}, status=status.HTTP_400_BAD_REQUEST
+        )
