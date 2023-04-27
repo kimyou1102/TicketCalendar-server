@@ -27,45 +27,39 @@ def kakaoLogin(request):
     kakao_user_response=json.loads(kakao_response.text)
 
     if len(User.objects.all()) != 0:     
-        print('0 아니다')
-        # if User.objects.filter(user_id=kakao_response['id']).exists():
-        #     user = User.objects.get(user_id=kakao_response['id'])
-        # else:
-        #     return Response(status=status.HTTP_400_BAD_REQUEST)
+        if User.objects.filter(p_id=kakao_user_response['id']).exists():
+            user = User.objects.filter(p_id=kakao_user_response['id'])
+            serializer = UserSerializer(data=user.values()[0])
+            login_response = login(user.values()[0], user[0])
+            return login_response
+        else:
+            return Response(status=status.HTTP_400_BAD_REQUEST)
     else:
-        user_info = {'user_id': kakao_user_response['id'], 'user_nickname': kakao_user_response['properties']['nickname'], 'age_range': kakao_user_response['kakao_account']['age_range'], 'email': kakao_user_response['kakao_account']['email']}
-        print(user_info)
-        login_response = login(user_info)
-        return login_response
+        user_info = {'p_id': kakao_user_response['id'], 'user_nickname': kakao_user_response['properties']['nickname'], 'age_range': kakao_user_response['kakao_account']['age_range'], 'email': kakao_user_response['kakao_account']['email']}
+        serializer = UserSerializer(data=user_info)
+        if serializer.is_valid():
+            user = serializer.save()
+            login_response = login(user_info, user)
+            return login_response
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-def login(data):
-    serializer = UserSerializer(data=data)
-    print(serializer)
-    if serializer.is_valid():
-        user = serializer.save()
-        # jwt 토큰 접근
-        token = TokenObtainPairSerializer.get_token(user)
-        print('token : ', token)
-        refresh_token = str(token)
-        print('refresh_token : ', refresh_token)
-        access_token = str(token.access_token)
-        print('access_token : ', access_token)
-
-        res = Response(
-            {
-                "user": serializer.data,
-                "message": "register successs",
-                "token": {
-                    "access": access_token,
-                    "refresh": refresh_token,
-                },
+def login(user_obj, user):
+    token = TokenObtainPairSerializer.get_token(user)
+    refresh_token = str(token)
+    access_token = str(token.access_token)
+    res = Response(
+        {
+            "user": user_obj,
+            "message": "register successs",
+            "token": {
+                "access": access_token,
+                "refresh": refresh_token,
             },
-            status=status.HTTP_200_OK,
-        )
-        
-        # jwt 토큰 => 쿠키에 저장
-        res.set_cookie("access", access_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5)) 
-        res.set_cookie("refresh", refresh_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5))
-
-        return res
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        },
+        status=status.HTTP_200_OK,
+    )
+    # jwt 토큰 => 쿠키에 저장
+    res.set_cookie("access", access_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5)) 
+    res.set_cookie("refresh", refresh_token, httponly=True, samesite=None, secure=True, expires=timedelta(minutes=5))
+    return res
